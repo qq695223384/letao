@@ -81,6 +81,10 @@ $(function() {
     var txt = $(this).text();
     // 设置 给按钮
     $('#dropdownText').text( txt );
+    var id=$(this).data("id");
+    $('[name="categoryId"]').val(id);
+
+    $('#form').data("bootstrapValidator").updateStatus("categoryId","VALID")
   });
 
 
@@ -97,8 +101,61 @@ $(function() {
       var imgUrl = data.result.picAddr;
       // 设置给 img
       $('#imgBox img').attr("src", imgUrl);
+      $('[name="brandLogo"]').val(imgUrl);
+      $('#form').data("bootstrapValidator").updateStatus("brandLogo","VALID")
     }
   });
 
+
+  $('#form').bootstrapValidator({
+    excluded:[],
+
+
+
+    feedbackIcons: {
+      valid: 'glyphicon glyphicon-ok',    // 校验成功
+      invalid: 'glyphicon glyphicon-remove',  // 校验失败
+      validating: 'glyphicon glyphicon-refresh' // 校验中
+    },
+
+    fields:{
+      categoryId: {
+        validators:{
+          notEmpty:{
+            message:"选择一级分类"
+          }
+        }
+      },
+      brandName: {
+        validators:{
+          notEmpty:{
+            message:"选择二级分类"
+          }
+        }
+      }
+    }
+
+  })
+
+  $('#form').on("success.form.bv",function (e) {
+    e.preventDefault();
+    $.ajax({
+      type:"post",
+      url:"/category/addSecondCategory",
+      data:$('#form').serialize(),
+      dataType:"json",
+      success:function (info) {
+        console.log(info);
+        if (info.success){
+          $('#addModal').modal("hide");
+          currentPage=1;
+          render();
+          $('#form').data("bootstrapValidator").resetForm(true);
+          $('#dropdownText').text("选择分类");
+          $('#imgBox img').attr("src","./images/none.png")
+        }
+      }
+    })
+  })
 
 })
